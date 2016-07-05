@@ -11,7 +11,7 @@ type ImageResource struct {
 	Id         uint16
 	Name       string
 	DataLength uint32
-	Data       []byte
+	Data       interface{} // Could be bytes or concrete type
 }
 
 type ImageResourceData interface {
@@ -85,7 +85,7 @@ func decodeName(r io.Reader) (string, uint32, error) {
 }
 
 // Returns number of bytes read or error
-func decodeData(r io.Reader, id uint16, length uint32) (uint32, error) {
+func decodeData(r io.Reader, id uint16, length uint32) (interface{}, uint32, error) {
 	if length%2 == 1 {
 		length += 1
 		if DEBUG {
@@ -96,22 +96,23 @@ func decodeData(r io.Reader, id uint16, length uint32) (uint32, error) {
 	decoder, ok := decoderForId(id)
 
 	if ok {
+		fmt.Println("Found a decoder for id: ", id)
 		data, byteCount, err := decoder.decode(r, id, length)
 		if err != nil {
-			return byteCount, err
+			return nil, byteCount, err
 		}
 
 		fmt.Printf("%v\n", data)
-		return byteCount, nil
+		return data, byteCount, nil
 	} else {
 		var crap []byte = make([]byte, length)
 		_, err := r.Read(crap)
 
 		if err != nil {
-			return length, err
+			return nil, length, err
 		}
 
-		return length, nil
+		return crap, length, nil
 	}
 }
 
@@ -149,7 +150,7 @@ func Decode(r io.Reader) (*ImageResource, uint32, error) {
 		fmt.Printf("Image resource section is %d bytes\n", imageResourceLength)
 	}
 
-	dataLen, err := decodeData(r, id, imageResourceLength)
+	data, dataLen, err := decodeData(r, id, imageResourceLength)
 
 	if err != nil {
 		return nil, bytesRead, err
@@ -162,7 +163,7 @@ func Decode(r io.Reader) (*ImageResource, uint32, error) {
 		id,
 		name,
 		imageResourceLength,
-		[]byte{},
+		data,
 	}, bytesRead, nil
 }
 
