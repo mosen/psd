@@ -2,7 +2,7 @@ package psd
 
 import (
 	"github.com/mosen/psd/header"
-	"github.com/mosen/psd/resources"
+	"github.com/mosen/psd/resource"
 	"image"
 	_ "image/jpeg"
 )
@@ -12,7 +12,7 @@ type PSD struct {
 	ColorModeDataLength uint32
 	ColorModeData []byte
 	ResourceLength uint32
-	Resources []resources.ImageResource
+	Resources []resource.ImageResource
 }
 
 // Retrieve the best available thumbnail (either from PSIR or XMP data)

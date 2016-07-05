@@ -1,4 +1,4 @@
-package resources
+package resource
 
 import (
 	"bytes"
@@ -8,12 +8,14 @@ import (
 	"image"
 	_ "image/jpeg"
 	"io"
+	"github.com/mosen/psd/resource"
 )
 
 // (Photoshop 5.0) Thumbnail resource (supersedes resource 1033).
 // Hex: 0x040C
 // Dec: 1036
 // http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_74450
+const RESOURCE_ID = 0x40C
 
 const (
 	FORMAT_RAWRGB = iota
@@ -55,7 +57,7 @@ func (t *Thumbnail) Image() (image.Image, error) {
 	}
 }
 
-func DecodeThumbnail(r io.Reader) (*Thumbnail, uint32, error) {
+func Decode(r io.Reader, id uint16, length uint32) (interface{}, uint32, error) {
 	var bytesRead uint32
 
 	var format uint32
@@ -123,4 +125,8 @@ func DecodeThumbnail(r io.Reader) (*Thumbnail, uint32, error) {
 		planeCount,
 		data,
 	}, bytesRead, nil
+}
+
+func init() {
+	resource.RegisterID(RESOURCE_ID, Decode)
 }

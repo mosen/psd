@@ -5,7 +5,7 @@ import (
 	"github.com/mosen/psd/header"
 	"encoding/binary"
 	"errors"
-	"github.com/mosen/psd/resources"
+	"github.com/mosen/psd/resource"
 	"fmt"
 )
 
@@ -36,7 +36,7 @@ func readColorData(r io.Reader) (uint32, []byte, error) {
 	}
 }
 
-func decodeImageResources(r io.Reader) (uint32, []resources.ImageResource, error) {
+func decodeImageResources(r io.Reader) (uint32, []resource.ImageResource, error) {
   	var imageResourceLength uint32
 	err := binary.Read(r, binary.BigEndian, &imageResourceLength)
 
@@ -47,9 +47,9 @@ func decodeImageResources(r io.Reader) (uint32, []resources.ImageResource, error
 	fmt.Println("resource length:", imageResourceLength)
 
 	var bytesRead uint32
-	var items []resources.ImageResource
+	var items []resource.ImageResource
 	for bytesRead < imageResourceLength {
-	 	resource, n, err := resources.Decode(r)
+	 	resource, n, err := resource.Decode(r)
 		bytesRead += n
 
 		if DEBUG {

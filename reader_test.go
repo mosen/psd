@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"bytes"
 	"fmt"
+	_ "github.com/mosen/psd/resource/thumbnail"
+	_ "github.com/mosen/psd/resource/xmp"
 )
 
 func TestDecode(t *testing.T) {

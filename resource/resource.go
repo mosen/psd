@@ -1,4 +1,4 @@
-package resources
+package resource
 
 import (
 	"encoding/binary"
@@ -18,8 +18,26 @@ type ImageResourceData interface {
 	Id() uint16
 }
 
-type ImageResourceDecoder interface {
-	Decode(io.Reader, uint16, uint32) (*ImageResourceData, error)
+type ImageResourceDecoder struct {
+	id uint16
+	decode func(io.Reader, uint16, uint32) (interface{}, uint32, error)
+}
+
+var decoders []ImageResourceDecoder
+
+// Fetch decoder for given resource id, bool is false if none was found
+func decoderForId(id uint16) (*ImageResourceDecoder, bool) {
+	for _, v := range decoders {
+		if v.id == id {
+			return &v, true
+		}
+	}
+	return nil, false
+}
+
+// Register a photoshop image resource decoder which returns its own resource instance, number of bytes read, error
+func RegisterID(id uint16, decode func(io.Reader, uint16, uint32) (interface{}, uint32, error)) {
+	decoders = append(decoders, ImageResourceDecoder{id, decode})
 }
 
 // Decode the name of the image resource section, which is often just null
@@ -75,32 +93,17 @@ func decodeData(r io.Reader, id uint16, length uint32) (uint32, error) {
 		}
 	}
 
-	switch {
-	case id == IR_THUMBNAIL:
-		if DEBUG {
-			fmt.Println("Decoding a thumbnail")
-		}
+	decoder, ok := decoderForId(id)
 
-	 	thumbnail, n, err := DecodeThumbnail(r)
+	if ok {
+		data, byteCount, err := decoder.decode(r, id, length)
 		if err != nil {
-			return n, err
+			return byteCount, err
 		}
 
-		if DEBUG {
-			fmt.Printf("%v\n", thumbnail)
-		}
-
-		return n, nil
-	case id == IR_XMP:
-		fmt.Println("Decoding XMP")
-		xmpbytes, n, err := DecodeXMP(r, id, length)
-		if err != nil {
-			return n, err
-		}
-
-		fmt.Printf("%v\n", string(xmpbytes))
-		return n, nil
-	default:
+		fmt.Printf("%v\n", data)
+		return byteCount, nil
+	} else {
 		var crap []byte = make([]byte, length)
 		_, err := r.Read(crap)
 
@@ -110,8 +113,6 @@ func decodeData(r io.Reader, id uint16, length uint32) (uint32, error) {
 
 		return length, nil
 	}
-
-	return 0, nil
 }
 
 func Decode(r io.Reader) (*ImageResource, uint32, error) {
@@ -164,3 +165,5 @@ func Decode(r io.Reader) (*ImageResource, uint32, error) {
 		[]byte{},
 	}, bytesRead, nil
 }
+
+
