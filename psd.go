@@ -66,12 +66,10 @@ func (p *PSD) XMPString() (string, error) {
 		return "", errors.New("no resource found with xmp metadata id 1060")
 	}
 
-	xmpString, ok := resource.Data.(string)
-
-	if !ok {
+	if xmpData, ok := resource.Data.([]byte); ok {
+		return string(xmpData), nil
+	} else {
 		fmt.Printf("%v\n", resource.Data)
-		return "", errors.New("found resource but could not assert type is string")
+		return "", errors.New("found xmp resource but could not assert type is string")
 	}
-
-     	return xmpString, nil
 }
