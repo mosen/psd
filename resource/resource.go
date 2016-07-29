@@ -96,15 +96,15 @@ func decodeData(r io.Reader, id uint16, length uint32) (interface{}, uint32, err
 	decoder, ok := decoderForId(id)
 
 	if ok {
-		fmt.Println("Found a decoder for id: ", id)
+		fmt.Printf("Found a decoder for id 0x%4x\n", id)
 		data, byteCount, err := decoder.decode(r, id, length)
 		if err != nil {
 			return nil, byteCount, err
 		}
 
-		fmt.Printf("%v\n", data)
 		return data, byteCount, nil
 	} else {
+		fmt.Printf("No decoder for id 0x%4x\n", id)
 		var crap []byte = make([]byte, length)
 		_, err := r.Read(crap)
 

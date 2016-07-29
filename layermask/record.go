@@ -2,6 +2,8 @@ package layermask
 
 import (
 	"image"
+	"io"
+	"encoding/binary"
 )
 
 const (
@@ -92,6 +94,7 @@ type BlendingRanges struct {
 	Ranges []BlendingRange
 }
 
+// http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_13084
 type LayerRecord struct {
 	Rect           image.Rectangle
 	ChannelCount   uint16
@@ -108,3 +111,33 @@ type LayerRecord struct {
 	Name           string
 }
 
+func DecodeLayerRecord(r io.Reader, record *LayerRecord) (uint32, error) {
+	var bytesRead int
+
+	var top, left, bottom, right uint32
+	if err := binary.Read(r, binary.BigEndian, &top); err != nil {
+		return bytesRead, err
+	}
+
+	if err := binary.Read(r, binary.BigEndian, &left); err != nil {
+		return bytesRead, err
+	}
+
+	if err := binary.Read(r, binary.BigEndian, &bottom); err != nil {
+		return bytesRead, err
+	}
+
+	if err := binary.Read(r, binary.BigEndian, &right); err != nil {
+		return bytesRead, err
+	}
+	record.Rect = image.Rect(left, top, right, bottom)
+	bytesRead += 16
+
+	if err := binary.Read(r, binary.BigEndian, &record.ChannelCount); err != nil {
+		return bytesRead, err
+	}
+	bytesRead += 2
+
+
+
+}

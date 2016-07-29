@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/mosen/psd/resource"
+	"github.com/mosen/psd/layermask"
 	"fmt"
 )
 
@@ -66,6 +67,10 @@ func decodeImageResources(r io.Reader) (uint32, []resource.ImageResource, error)
 	return imageResourceLength, items, nil
 }
 
+func decodeLayerMasks(r io.Reader) (uint32, layermask.LayerMasks, error) {
+     return layermask.DecodeLayerMasks(r)
+}
+
 func (d *decoder) decode(r io.Reader) (*PSD, error) {
 	header, err := header.Decode(r)
 	if err != nil {
@@ -90,6 +95,8 @@ func (d *decoder) decode(r io.Reader) (*PSD, error) {
 
 	psd.ResourceLength = resourceLength
 	psd.Resources = resources
+
+	layermaskLength, layerMasks, err := decodeLayerMasks(r)
 
 	return psd, nil
 }

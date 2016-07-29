@@ -7,10 +7,11 @@ import (
 	"fmt"
 	_ "github.com/mosen/psd/resource/thumbnail"
 	_ "github.com/mosen/psd/resource/xmp"
+	//_ "github.com/mosen/psd/resource/versioninfo"
 )
 
 func TestDecode(t *testing.T) {
-	data, err := ioutil.ReadFile("./bluesquare/Glass.psd")
+	data, err := ioutil.ReadFile("./bluesquare/Spotty180C.psd")
 	reader := bytes.NewReader(data)
 
 	if err != nil {
@@ -23,7 +24,8 @@ func TestDecode(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Printf("%v\n", psd)
+	fmt.Printf("Channels: %d\n", psd.Header.Channels)
+	fmt.Printf("Bit depth: %d\n", psd.Header.Depth)
 }
 
 
@@ -72,5 +74,7 @@ func TestXMPString(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Printf("%v\n", xmpString)
+	if xmpString[:9] != "<?xpacket" {
+		t.Errorf("does not seem like the start of an XMP string: %s\n", xmpString[:9])
+	}
 }
